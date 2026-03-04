@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PayFlow — Payroll System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+[data-theme="dark"] {
+  --bg: #0c0e14; --surface: #13151e; --surface2: #1a1d29;
+  --border: #252836; --text: #e8eaf0; --text2: #b0b4c1;
+  --muted: #6b7280; --shadow: rgba(0,0,0,0.4); --login-bg: #090b11;
+}
+[data-theme="light"] {
+  --bg: #f4f5f9; --surface: #ffffff; --surface2: #f0f1f6;
+  --border: #e2e4ec; --text: #111827; --text2: #374151;
+  --muted: #9ca3af; --shadow: rgba(0,0,0,0.08); --login-bg: #eef0f7;
+}
+:root {
+  --accent: #6c63ff; --accent2: #00c98a; --accent3: #ff6b6b; --accent4: #ffc85a;
+  --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+}
+
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; transition: background .25s, color .25s; }
+
+/* ── LOGIN ── */
+#login-screen { display: flex; min-height: 100vh; }
+.login-left {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  align-items: center; padding: 60px; background: var(--surface);
+  border-right: 1px solid var(--border); position: relative; overflow: hidden;
+}
+.login-left::before {
+  content:''; position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(108,99,255,.08) 0%, transparent 70%);
+  top:-100px; left:-100px; pointer-events:none;
+}
+.login-left::after {
+  content:''; position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,201,138,.06) 0%, transparent 70%);
+  bottom:-80px; right:-80px; pointer-events:none;
+}
+.login-logo { font-family: var(--font-display); font-size: 26px; font-weight: 800; display:flex; align-items:center; gap:10px; margin-bottom:48px; letter-spacing:-.5px; }
+.logo-dot { width:11px; height:11px; border-radius:50%; background:var(--accent); box-shadow:0 0 14px var(--accent); }
+.login-form-wrap { width:100%; max-width:380px; position:relative; z-index:1; }
+.login-title { font-family:var(--font-display); font-size:28px; font-weight:800; margin-bottom:6px; letter-spacing:-.5px; }
+.login-sub { font-size:14px; color:var(--muted); margin-bottom:36px; }
+
+.form-group { margin-bottom:18px; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:7px; }
+.form-input, .form-select {
+  width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px;
+  padding:12px 16px; color:var(--text); font-family:var(--font-body); font-size:14px;
+  outline:none; transition:border-color .18s, box-shadow .18s;
+}
+.form-input::placeholder { color:var(--muted); }
+.form-input:focus, .form-select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(108,99,255,.15); }
+.form-select option { background:var(--surface2); color:var(--text); }
+
+.login-error { background:rgba(255,107,107,.1); border:1px solid rgba(255,107,107,.3); color:var(--accent3); border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:16px; display:none; }
+
+.btn { padding:9px 18px; border-radius:10px; border:none; cursor:pointer; font-family:var(--font-body); font-size:13px; font-weight:600; transition:all .18s ease; }
+.btn-primary { background:var(--accent); color:white; box-shadow:0 4px 18px rgba(108,99,255,.35); }
+.btn-primary:hover { background:#7c75ff; transform:translateY(-1px); box-shadow:0 6px 22px rgba(108,99,255,.45); }
+.btn-ghost { background:var(--surface2); color:var(--text); border:1.5px solid var(--border); }
+.btn-ghost:hover { background:var(--border); }
+.login-btn { width:100%; padding:14px; font-size:15px; margin-top:8px; border-radius:12px; }
+
+.login-hint { margin-top:20px; padding:14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:12px; color:var(--muted); line-height:1.8; }
+.login-hint strong { color:var(--text2); }
+
+.login-right {
+  width:420px; background:linear-gradient(145deg,#1a1b2e 0%,#0d0f1c 100%);
+  display:flex; flex-direction:column; justify-content:center;
+  align-items:center; padding:60px; gap:30px;
+}
+[data-theme="light"] .login-right { background:linear-gradient(145deg,#4f46e5 0%,#3730a3 100%); }
+.login-tagline { font-family:var(--font-display); font-size:32px; font-weight:800; color:white; text-align:center; line-height:1.2; letter-spacing:-1px; }
+.login-tagline span { color:var(--accent4); }
+.login-feature { display:flex; gap:14px; align-items:flex-start; width:100%; }
+.feature-icon { width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.feature-title { font-family:var(--font-display); font-size:14px; font-weight:700; color:rgba(255,255,255,.9); margin-bottom:3px; }
+.feature-desc { font-size:12px; color:rgba(255,255,255,.55); line-height:1.5; }
+
+/* ── APP SHELL ── */
+#app-shell { width:100%; display:none; }
+#app-shell.visible { display:flex; min-height:100vh; }
+
+.sidebar {
+  width:240px; min-height:100vh; background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:28px 0;
+  position:fixed; top:0; left:0; z-index:100; transition:background .25s, border-color .25s;
+}
+.sidebar-logo { font-family:var(--font-display); font-weight:800; font-size:20px; padding:0 24px 32px; letter-spacing:-.5px; display:flex; align-items:center; gap:10px; }
+.nav-section { padding:0 16px; margin-bottom:8px; }
+.nav-label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); padding:0 8px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:all .18s; font-size:14px; font-weight:500; color:var(--muted); user-select:none; margin-bottom:2px; }
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:rgba(108,99,255,.12); color:var(--accent); }
+.nav-icon { width:18px; height:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+.sidebar-bottom { margin-top:auto; padding:16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
+.user-chip { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--surface2); }
+.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:white; flex-shrink:0; }
+.user-info { flex:1; overflow:hidden; }
+.user-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-role { font-size:11px; color:var(--muted); }
+
+.theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:10px; background:var(--surface2); font-size:12px; color:var(--muted); cursor:pointer; transition:background .18s; }
+.theme-toggle:hover { background:var(--border); }
+.toggle-track { width:36px; height:20px; border-radius:10px; background:var(--border); position:relative; transition:background .2s; flex-shrink:0; }
+.toggle-track.on { background:var(--accent); }
+.toggle-thumb { width:14px; height:14px; border-radius:50%; background:white; position:absolute; top:3px; left:3px; transition:transform .2s; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+.toggle-track.on .toggle-thumb { transform:translateX(16px); }
+
+.logout-btn { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:10px; font-size:13px; font-weight:500; color:var(--accent3); cursor:pointer; transition:background .15s; }
+.logout-btn:hover { background:rgba(255,107,107,.08); }
+
+.main { margin-left:240px; flex:1; min-height:100vh; display:flex; flex-direction:column; }
+.topbar { padding:18px 32px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--bg); position:sticky; top:0; z-index:50; transition:background .25s; }
+.page-title { font-family:var(--font-display); font-size:20px; font-weight:700; }
+.topbar-actions { display:flex; gap:10px; align-items:center; }
+.badge { padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600; background:rgba(0,201,138,.12); color:var(--accent2); }
+
+.content { padding:32px; flex:1; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* STATS */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; position:relative; overflow:hidden; transition:transform .18s, background .25s; }
+.stat-card:hover { transform:translateY(-2px); }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.stat-card:nth-child(1)::before { background:var(--accent); }
+.stat-card:nth-child(2)::before { background:var(--accent2); }
+.stat-card:nth-child(3)::before { background:var(--accent4); }
+.stat-card:nth-child(4)::before { background:var(--accent3); }
+.stat-label { font-size:11px; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:.8px; }
+.stat-value { font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-1px; margin-bottom:6px; }
+.stat-change { font-size:12px; }
+.stat-change.up { color:var(--accent2); } .stat-change.down { color:var(--accent3); }
+.stat-icon { position:absolute; top:18px; right:18px; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+
+/* TABLE CARD */
+.table-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:24px; transition:background .25s; }
+.table-header { padding:18px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+.table-title { font-family:var(--font-display); font-size:15px; font-weight:700; }
+.search-input { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; color:var(--text); font-family:var(--font-body); font-size:13px; outline:none; width:200px; transition:border-color .18s; }
+.search-input::placeholder { color:var(--muted); }
+.search-input:focus { border-color:var(--accent); }
+table { width:100%; border-collapse:collapse; }
+thead tr { border-bottom:1px solid var(--border); }
+th { padding:11px 24px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:600; }
+td { padding:13px 24px; font-size:14px; border-bottom:1px solid var(--border); color:var(--text2); }
+tr:last-child td { border-bottom:none; }
+tbody tr { transition:background .12s; }
+tbody tr:hover { background:var(--surface2); }
+.emp-name { display:flex; align-items:center; gap:12px; }
+.emp-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:white; flex-shrink:0; }
+.pill { padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; }
+.pill-active { background:rgba(0,201,138,.12); color:var(--accent2); }
+.pill-pending { background:rgba(255,200,90,.12); color:var(--accent4); }
+.pill-inactive { background:rgba(255,107,107,.1); color:var(--accent3); }
+.dept-tag { padding:3px 8px; border-radius:5px; font-size:11px; font-weight:600; background:rgba(108,99,255,.1); color:var(--accent); }
+
+/* PAY RUN */
+.pay-run-grid { display:grid; grid-template-columns:1fr 360px; gap:20px; }
+.run-steps { display:flex; flex-direction:column; gap:12px; }
+.run-step { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:all .18s; }
+.run-step:hover { border-color:var(--accent); }
+.run-step.done { border-color:var(--accent2); }
+.run-step.active { border-color:var(--accent); background:rgba(108,99,255,.04); }
+.step-num { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; background:var(--surface2); color:var(--muted); flex-shrink:0; }
+.run-step.done .step-num { background:rgba(0,201,138,.12); color:var(--accent2); }
+.run-step.active .step-num { background:rgba(108,99,255,.15); color:var(--accent); }
+.step-info { flex:1; }
+.step-name { font-size:14px; font-weight:600; margin-bottom:2px; color:var(--text); }
+.step-desc { font-size:12px; color:var(--muted); }
+
+.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; height:fit-content; position:sticky; top:80px; }
+.summary-title { font-family:var(--font-display); font-size:15px; font-weight:700; margin-bottom:20px; }
+.summary-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.summary-row:last-of-type { border-bottom:none; }
+.summary-row .label { color:var(--muted); }
+.summary-total { margin-top:16px; padding-top:16px; border-top:2px solid var(--border); display:flex; justify-content:space-between; font-family:var(--font-display); font-size:18px; font-weight:700; }
+
+/* PAYSLIP */
+.payslip-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; max-width:680px; margin:0 auto; }
+.payslip-top { background:linear-gradient(135deg,#1a1b2e 0%,#0f1024 100%); padding:30px; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+[data-theme="light"] .payslip-top { background:linear-gradient(135deg,#3730a3 0%,#1e1b4b 100%); }
+.payslip-top::after { content:'PAYSLIP'; position:absolute; right:30px; top:50%; transform:translateY(-50%); font-family:var(--font-display); font-size:48px; font-weight:800; color:rgba(255,255,255,.05); letter-spacing:4px; }
+.payslip-company { font-size:11px; color:rgba(255,255,255,.5); margin-bottom:4px; letter-spacing:1px; text-transform:uppercase; }
+.payslip-name { font-family:var(--font-display); font-size:22px; font-weight:700; margin-bottom:4px; color:white; }
+.payslip-meta { font-size:13px; color:rgba(255,255,255,.55); display:flex; gap:20px; }
+.payslip-body { padding:26px 30px; }
+.payslip-section { margin-bottom:22px; }
+.payslip-section-title { font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:10px; }
+.payslip-line { display:flex; justify-content:space-between; padding:8px 0; font-size:14px; border-bottom:1px solid var(--border); color:var(--text2); }
+.payslip-line:last-child { border-bottom:none; }
+.deduction { color:var(--accent3); } .earning { color:var(--accent2); }
+.payslip-footer { border-top:2px solid var(--border); padding:20px 30px; display:flex; justify-content:space-between; align-items:center; background:rgba(108,99,255,.04); }
+.net-label { font-size:12px; color:var(--muted); }
+.net-amount { font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--accent2); }
+
+/* DEPT BARS */
+.dept-bar { margin-bottom:14px; }
+.dept-bar-row { display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px; color:var(--text2); }
+.bar-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:2px; }
+
+/* CHART */
+.chart-bar-group { display:flex; align-items:flex-end; gap:8px; height:80px; padding:0 4px; }
+.bar-wrap { display:flex; flex-direction:column; align-items:center; flex:1; gap:4px; }
+.bar { width:100%; border-radius:4px 4px 0 0; background:var(--accent); min-height:4px; transition:opacity .2s; }
+.bar:hover { opacity:1 !important; }
+.bar-label { font-size:10px; color:var(--muted); }
+
+/* ── DEDUCTIONS CONFIG ── */
+.deductions-grid { display:grid; grid-template-columns:1fr 380px; gap:20px; }
+.info-banner { background:rgba(108,99,255,.07); border:1px solid rgba(108,99,255,.2); border-radius:10px; padding:13px 16px; font-size:13px; color:var(--text2); margin-bottom:20px; display:flex; gap:10px; align-items:flex-start; line-height:1.55; }
+
+.deduction-row { display:grid; grid-template-columns:1fr 120px 100px 44px; gap:10px; align-items:center; padding:14px 0; border-bottom:1px solid var(--border); }
+.deduction-row:last-child { border-bottom:none; }
+.ded-input { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-family:var(--font-body); font-size:13px; outline:none; width:100%; transition:border-color .18s; }
+.ded-input:focus { border-color:var(--accent); }
+.ded-type-toggle { display:flex; background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; overflow:hidden; height:38px; }
+.ded-type-btn { flex:1; border:none; background:transparent; color:var(--muted); font-family:var(--font-body); font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; }
+.ded-type-btn.active { background:var(--accent); color:white; }
+.ded-remove { width:34px; height:34px; border-radius:8px; border:1px solid rgba(255,107,107,.25); background:rgba(255,107,107,.08); color:var(--accent3); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all .15s; }
+.ded-remove:hover { background:rgba(255,107,107,.18); }
+
+.preview-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; height:fit-content; position:sticky; top:80px; }
+.preview-title { font-family:var(--font-display); font-size:15px; font-weight:700; margin-bottom:6px; }
+.preview-sub { font-size:12px; color:var(--muted); margin-bottom:20px; }
+.preview-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.preview-row:last-child { border-bottom:none; }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:200; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:30px; width:420px; max-width:95vw; animation:slideUp .22s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.modal-title { font-family:var(--font-display); font-size:18px; font-weight:700; margin-bottom:6px; }
+.modal-sub { font-size:13px; color:var(--muted); margin-bottom:22px; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+.success-icon { width:54px; height:54px; border-radius:50%; background:rgba(0,201,138,.12); display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 12px; }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════
+     LOGIN
+════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-left">
+    <div class="login-logo"><div class="logo-dot"></div>PayFlow</div>
+    <div class="login-form-wrap">
+      <div class="login-title">Welcome back</div>
+      <div class="login-sub">Sign in to your payroll dashboard</div>
+      <div class="login-error" id="login-error">Invalid email or password. Please try again.</div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" id="login-email" placeholder="admin@payflow.zm" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="login-password" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="login-hint">
+        <strong>Demo Credentials</strong><br>
+        Administrator &nbsp;→ <strong>admin@payflow.zm</strong> / <strong>admin123</strong><br>
+        HR Manager &nbsp;&nbsp;&nbsp;→ <strong>hr@payflow.zm</strong> / <strong>hr1234</strong>
+      </div>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-tagline">Payroll made<br><span>effortless.</span></div>
+    <div class="login-feature"><div class="feature-icon">🛡️</div><div><div class="feature-title">Zambia-Ready Compliance</div><div class="feature-desc">PAYE, NAPSA & NHIMA deductions pre-configured for ZRA regulations.</div></div></div>
+    <div class="login-feature"><div class="feature-icon">⚙️</div><div><div class="feature-title">Custom Deduction Rules</div><div class="feature-desc">Admins define named deductions with flat or percentage rates.</div></div></div>
+    <div class="login-feature"><div class="feature-icon">🌓</div><div><div class="feature-title">Light & Dark Mode</div><div class="feature-desc">Switch themes any time — your preference is remembered.</div></div></div>
+    <div class="login-feature"><div class="feature-icon">📄</div><div><div class="feature-title">Instant Payslips</div><div class="feature-desc">Auto-calculated payslips in Zambian Kwacha, ready to download.</div></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     APP SHELL
+════════════════════════════ -->
+<div id="app-shell" style="display:none; width:100%;">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-dot"></div>PayFlow</div>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>Dashboard
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Payroll</div>
+      <div class="nav-item" onclick="showPage('employees')">
+        <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>Employees
+      </div>
+      <div class="nav-item" onclick="showPage('payrun')">
+        <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>Pay Run
+      </div>
+      <div class="nav-item" onclick="showPage('payslip')">
+        <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>Payslips
+      </div>
+    </div>
+    <div class="nav-section" id="admin-nav-section" style="display:none;">
+      <div class="nav-label">Admin</div>
+      <div class="nav-item" onclick="showPage('deductions')">
+        <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div>Deductions Config
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-label">🌙 Dark Mode</span>
+        <div class="toggle-track" id="theme-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-avatar">AU</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Loading…</div>
+          <div class="user-role" id="sidebar-role">—</div>
+        </div>
+      </div>
+      <div class="logout-btn" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions">
+        <span class="badge">March 2026 · ZMW</span>
+        <button class="btn btn-ghost" onclick="openModal()">+ Process Payroll</button>
+        <button class="btn btn-primary">Export Report</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon" style="background:rgba(108,99,255,.1)">💸</div><div class="stat-label">Total Payroll</div><div class="stat-value">K 7.12M</div><div class="stat-change up">↑ 3.2% vs last month</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:rgba(0,201,138,.1)">👥</div><div class="stat-label">Active Employees</div><div class="stat-value">148</div><div class="stat-change up">↑ 4 new this month</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:rgba(255,200,90,.1)">📄</div><div class="stat-label">Payslips Issued</div><div class="stat-value">144</div><div class="stat-change down">↓ 4 pending</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:rgba(255,107,107,.1)">🏦</div><div class="stat-label">Tax Deducted</div><div class="stat-value">K 1.05M</div><div class="stat-change up">↑ 1.8% vs last month</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;">
+          <div class="table-card">
+            <div class="table-header"><div class="table-title">Payroll Trends</div><div style="font-size:12px;color:var(--muted)">Last 7 months</div></div>
+            <div style="padding:24px;">
+              <div class="chart-bar-group">
+                <div class="bar-wrap"><div class="bar" style="height:55px;opacity:.4"></div><div class="bar-label">Sep</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:62px;opacity:.5"></div><div class="bar-label">Oct</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:48px;opacity:.45"></div><div class="bar-label">Nov</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:70px;opacity:.5"></div><div class="bar-label">Dec</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:58px;opacity:.55"></div><div class="bar-label">Jan</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:65px;opacity:.65"></div><div class="bar-label">Feb</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:75px;opacity:1"></div><div class="bar-label">Mar</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><div class="table-title">By Department</div></div>
+            <div style="padding:16px 24px;">
+              <div class="dept-bar"><div class="dept-bar-row"><span>Engineering</span><span style="color:var(--accent)">K 2.8M</span></div><div class="bar-track"><div class="bar-fill" style="width:72%;background:var(--accent)"></div></div></div>
+              <div class="dept-bar"><div class="dept-bar-row"><span>Sales</span><span style="color:var(--accent2)">K 1.7M</span></div><div class="bar-track"><div class="bar-fill" style="width:44%;background:var(--accent2)"></div></div></div>
+              <div class="dept-bar"><div class="dept-bar-row"><span>Marketing</span><span style="color:var(--accent4)">K 1.2M</span></div><div class="bar-track"><div class="bar-fill" style="width:31%;background:var(--accent4)"></div></div></div>
+              <div class="dept-bar"><div class="dept-bar-row"><span>Operations</span><span style="color:var(--accent3)">K 850K</span></div><div class="bar-track"><div class="bar-fill" style="width:22%;background:var(--accent3)"></div></div></div>
+              <div class="dept-bar"><div class="dept-bar-row"><span>HR & Admin</span><span style="color:var(--muted)">K 562K</span></div><div class="bar-track"><div class="bar-fill" style="width:15%;background:var(--muted)"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPLOYEES -->
+      <div class="page" id="page-employees">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">All Employees</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input class="search-input" type="text" placeholder="Search employee…" oninput="filterTable(this.value)">
+              <button class="btn btn-primary">+ Add Employee</button>
+            </div>
+          </div>
+          <table id="emp-table">
+            <thead><tr><th>Employee</th><th>Department</th><th>Position</th><th>Basic Salary</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><div class="emp-name"><div class="emp-avatar" style="background:linear-gradient(135deg,#6c63ff,#a78bfa)">JD</div><div><div style="font-weight:600;color:var(--text)">James Dube</div><div style="font-size:12px;color:var(--muted)">EMP-001</div></div></div></td><td><span class="dept-tag">Engineering</span></td><td>Senior Dev</td><td style="font-weight:600;color:var(--accent2)">K 21,500</td><td><span class="pill pill-active">Active</span></td><td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="showPage('payslip')">Payslip</button></td></tr>
+              <tr><td><div class="emp-name"><div class="emp-avatar" style="background:linear-gradient(135deg,#00c98a,#0ea5e9)">MN</div><div><div style="font-weight:600;color:var(--text)">Mary Nkosi</div><div style="font-size:12px;color:var(--muted)">EMP-002</div></div></div></td><td><span class="dept-tag" style="background:rgba(0,201,138,.08);color:var(--accent2)">Sales</span></td><td>Sales Lead</td><td style="font-weight:600;color:var(--accent2)">K 15,600</td><td><span class="pill pill-active">Active</span></td><td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="showPage('payslip')">Payslip</button></td></tr>
+              <tr><td><div class="emp-name"><div class="emp-avatar" style="background:linear-gradient(135deg,#ffc85a,#f97316)">TC</div><div><div style="font-weight:600;color:var(--text)">Tanya Chirwa</div><div style="font-size:12px;color:var(--muted)">EMP-003</div></div></div></td><td><span class="dept-tag" style="background:rgba(255,200,90,.1);color:var(--accent4)">Marketing</span></td><td>Brand Manager</td><td style="font-weight:600;color:var(--accent2)">K 14,500</td><td><span class="pill pill-pending">Pending</span></td><td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="showPage('payslip')">Payslip</button></td></tr>
+              <tr><td><div class="emp-name"><div class="emp-avatar" style="background:linear-gradient(135deg,#ff6b6b,#f43f5e)">KM</div><div><div style="font-weight:600;color:var(--text)">Kelvin Mutale</div><div style="font-size:12px;color:var(--muted)">EMP-004</div></div></div></td><td><span class="dept-tag" style="background:rgba(0,201,138,.08);color:var(--accent2)">Operations</span></td><td>Ops Analyst</td><td style="font-weight:600;color:var(--accent2)">K 12,300</td><td><span class="pill pill-inactive">On Leave</span></td><td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="showPage('payslip')">Payslip</button></td></tr>
+              <tr><td><div class="emp-name"><div class="emp-avatar" style="background:linear-gradient(135deg,#818cf8,#6366f1)">SP</div><div><div style="font-weight:600;color:var(--text)">Sharon Phiri</div><div style="font-size:12px;color:var(--muted)">EMP-005</div></div></div></td><td><span class="dept-tag">Engineering</span></td><td>Frontend Dev</td><td style="font-weight:600;color:var(--accent2)">K 17,800</td><td><span class="pill pill-active">Active</span></td><td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="showPage('payslip')">Payslip</button></td></tr>
+              <tr><td><div class="emp-name"><div class="emp-avatar" style="background:linear-gradient(135deg,#34d399,#059669)">BM</div><div><div style="font-weight:600;color:var(--text)">Brian Mwale</div><div style="font-size:12px;color:var(--muted)">EMP-006</div></div></div></td><td><span class="dept-tag" style="background:rgba(255,107,107,.1);color:var(--accent3)">HR & Admin</span></td><td>HR Officer</td><td style="font-weight:600;color:var(--accent2)">K 10,500</td><td><span class="pill pill-active">Active</span></td><td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="showPage('payslip')">Payslip</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAY RUN -->
+      <div class="page" id="page-payrun">
+        <div class="pay-run-grid">
+          <div class="run-steps">
+            <div class="run-step done"><div class="step-num">✓</div><div class="step-info"><div class="step-name">Select Pay Period</div><div class="step-desc">March 1 – March 31, 2026</div></div><span class="pill pill-active">Done</span></div>
+            <div class="run-step done"><div class="step-num">✓</div><div class="step-info"><div class="step-name">Verify Employees</div><div class="step-desc">148 employees included</div></div><span class="pill pill-active">Done</span></div>
+            <div class="run-step active"><div class="step-num">3</div><div class="step-info"><div class="step-name">Review Deductions</div><div class="step-desc">Applied from Deductions Config</div></div><span class="pill pill-pending">In Progress</span></div>
+            <div class="run-step"><div class="step-num">4</div><div class="step-info"><div class="step-name">Approve & Submit</div><div class="step-desc">Final review and process</div></div><span class="pill" style="background:var(--surface2);color:var(--muted)">Pending</span></div>
+            <div class="table-card" style="margin-bottom:0;margin-top:8px;">
+              <div class="table-header"><div class="table-title">Active Deductions</div><button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="showPage('deductions')">Configure →</button></div>
+              <table><thead><tr><th>Deduction Name</th><th>Type</th><th>Rate / Amount</th><th>Est. Total</th></tr></thead><tbody id="payrun-deductions-table"></tbody></table>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-title">Run Summary</div>
+            <div class="summary-row"><span class="label">Period</span><span>March 2026</span></div>
+            <div class="summary-row"><span class="label">Employees</span><span>148</span></div>
+            <div class="summary-row"><span class="label">Gross Payroll</span><span>K 7,120,000</span></div>
+            <div id="run-deduction-rows"></div>
+            <div class="summary-total"><span>Net Payroll</span><span id="run-net" style="color:var(--accent2)">—</span></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:20px;padding:12px;" onclick="openModal()">Approve & Process →</button>
+            <button class="btn btn-ghost" style="width:100%;margin-top:8px;">Save Draft</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYSLIP -->
+      <div class="page" id="page-payslip">
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:20px;">
+          <button class="btn btn-ghost" onclick="showPage('employees')">← Back to Employees</button>
+          <button class="btn btn-primary">⬇ Download PDF</button>
+        </div>
+        <div class="payslip-card">
+          <div class="payslip-top">
+            <div class="payslip-company">PayFlow Inc. · Lusaka, Zambia</div>
+            <div class="payslip-name">James Dube</div>
+            <div class="payslip-meta"><span>EMP-001</span><span>Senior Developer</span><span>March 2026</span></div>
+          </div>
+          <div class="payslip-body">
+            <div class="payslip-section">
+              <div class="payslip-section-title">Earnings</div>
+              <div class="payslip-line"><span>Basic Salary</span><span class="earning">K 21,500.00</span></div>
+              <div class="payslip-line"><span>Housing Allowance</span><span class="earning">K 2,150.00</span></div>
+              <div class="payslip-line"><span>Transport Allowance</span><span class="earning">K 1,000.00</span></div>
+              <div class="payslip-line"><span>Performance Bonus</span><span class="earning">K 1,500.00</span></div>
+              <div class="payslip-line" style="font-weight:600;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;color:var(--text)"><span>Gross Earnings</span><span>K 26,150.00</span></div>
+            </div>
+            <div class="payslip-section">
+              <div class="payslip-section-title">Deductions</div>
+              <div id="payslip-deductions"></div>
+              <div class="payslip-line" style="font-weight:600;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;"><span>Total Deductions</span><span id="payslip-total-ded" class="deduction">—</span></div>
+            </div>
+          </div>
+          <div class="payslip-footer">
+            <div><div class="net-label">Net Pay</div><div style="font-size:12px;color:var(--muted)">Bank transfer · Zanaco</div></div>
+            <div class="net-amount" id="payslip-net">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEDUCTIONS CONFIG -->
+      <div class="page" id="page-deductions">
+        <div class="deductions-grid">
+          <div>
+            <div class="info-banner">
+              <span style="font-size:18px;flex-shrink:0">ℹ️</span>
+              <span>Configure all payroll deductions here. Choose <strong>% Rate</strong> to deduct a percentage of gross salary, or <strong>K Flat</strong> for a fixed Kwacha amount per employee. Changes are reflected immediately in payslips and pay runs when saved. Deductions are stored in your browser session.</span>
+            </div>
+            <div class="table-card">
+              <div class="table-header">
+                <div class="table-title">Deduction Rules</div>
+                <button class="btn btn-primary" style="font-size:12px;padding:7px 14px;" onclick="addDeductionRow()">+ Add Deduction</button>
+              </div>
+              <div style="padding:8px 24px 18px;">
+                <div style="display:grid;grid-template-columns:1fr 120px 100px 44px;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:6px;">
+                  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;">Name</div>
+                  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;">Type</div>
+                  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;">Value</div>
+                  <div></div>
+                </div>
+                <div id="deduction-rows"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+              <button class="btn btn-ghost" onclick="resetDeductions()" style="font-size:13px;">↺ Reset to ZRA Defaults</button>
+              <button class="btn btn-primary" onclick="saveDeductions()" style="padding:11px 24px;">Save Deductions</button>
+            </div>
+          </div>
+
+          <div class="preview-card">
+            <div class="preview-title">Live Preview</div>
+            <div class="preview-sub">Sample: K 26,150.00 gross salary</div>
+            <div id="preview-rows"></div>
+            <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-family:var(--font-display);font-size:17px;font-weight:700;">
+              <span>Net Pay</span><span id="preview-net" style="color:var(--accent2)">—</span>
+            </div>
+            <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:10px;">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px;">Total Deduction Rate</div>
+              <div id="preview-rate" style="font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--accent3)">0.0%</div>
+              <div id="preview-total-ded" style="font-size:12px;color:var(--muted);margin-top:4px;">K 0.00 deducted</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div id="modal-s1">
+      <div class="modal-title">Process Payroll</div>
+      <div class="modal-sub">Confirm details for the March 2026 pay run</div>
+      <div class="form-group"><label class="form-label">Pay Period</label><select class="form-select"><option>March 2026</option><option>February 2026</option></select></div>
+      <div class="form-group"><label class="form-label">Payment Method</label><select class="form-select"><option>Bank Transfer</option><option>Cheque</option></select></div>
+      <div class="form-group"><label class="form-label">Authorization Code</label><input class="form-input" type="password" placeholder="Enter your auth code…"></div>
+      <div style="background:rgba(108,99,255,.07);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:13px;font-size:13px;color:var(--text2);">
+        💡 This will process payments for <strong style="color:var(--text)">148 employees</strong>. Net total based on current deduction config.
+      </div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="nextModalStep()">Confirm & Process</button></div>
+    </div>
+    <div id="modal-s2" style="display:none;">
+      <div style="text-align:center;padding:10px 0;">
+        <div class="success-icon">✅</div>
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:6px;">Payroll Processed!</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px)">Payments have been queued for all 148 employees.</div>
+        <div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:left;margin-top:16px;">
+          <div class="summary-row" style="border-color:var(--border)"><span class="label">Reference</span><span style="font-family:monospace;font-size:13px;">PAY-2026-03-001</span></div>
+          <div class="summary-row" style="border-color:var(--border)"><span class="label">Status</span><span class="pill pill-active">Processing</span></div>
+          <div class="summary-row" style="border-bottom:none"><span class="label">Est. Completion</span><span>Within 24 hours</span></div>
+        </div>
+      </div>
+      <div class="modal-actions" style="justify-content:center;margin-top:20px;"><button class="btn btn-primary" onclick="closeModal()">Done</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:28px;right:28px;background:var(--accent2);color:#003d2a;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,201,138,.3);">
+  ✓ Saved
+</div>
+
+<script>
+// ─── AUTH ───────────────────────────────────────────────────────────
+const USERS = [
+  { email:'admin@payflow.zm', password:'admin123', name:'Admin User',  role:'Administrator', initials:'AU', isAdmin:true  },
+  { email:'hr@payflow.zm',    password:'hr1234',   name:'Grace Banda', role:'HR Manager',    initials:'GB', isAdmin:false }
+];
+let currentUser = null;
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('login-password').value;
+  const err   = document.getElementById('login-error');
+  const user  = USERS.find(u => u.email === email && u.password === pass);
+  if (!user) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  currentUser = user;
+  document.getElementById('sidebar-name').textContent    = user.name;
+  document.getElementById('sidebar-role').textContent    = user.role;
+  document.getElementById('sidebar-avatar').textContent  = user.initials;
+  document.getElementById('admin-nav-section').style.display = user.isAdmin ? '' : 'none';
+  document.getElementById('login-screen').style.display  = 'none';
+  const shell = document.getElementById('app-shell');
+  shell.style.display = 'flex';
+  initDeductions();
+}
+
+['login-email','login-password'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); })
+);
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('page-title').textContent = 'Dashboard';
+  document.querySelectorAll('.nav-item').forEach((n,i) => n.classList.toggle('active', i===0));
+  document.querySelectorAll('.page').forEach((p,i) => p.classList.toggle('active', i===0));
+}
+
+// ─── THEME ──────────────────────────────────────────────────────────
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-label').textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
+  document.getElementById('theme-track').classList.toggle('on', !isDark);
+}
+
+// ─── NAVIGATION ─────────────────────────────────────────────────────
+const PAGE_TITLES = { dashboard:'Dashboard', employees:'Employees', payrun:'Pay Run', payslip:'Payslip — James Dube', deductions:'Deductions Config' };
+const NAV_PAGES   = ['dashboard','employees','payrun','payslip','deductions'];
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-title').textContent = PAGE_TITLES[name] || name;
+  const idx = NAV_PAGES.indexOf(name);
+  const items = document.querySelectorAll('.nav-item');
+  if (idx >= 0 && items[idx]) items[idx].classList.add('active');
+  if (name === 'deductions') renderDeductionConfig();
+  if (name === 'payslip')    renderPayslipDeductions();
+  if (name === 'payrun')     renderPayrunDeductions();
+}
+
+function filterTable(val) {
+  document.querySelectorAll('#emp-table tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ─── DEDUCTIONS ENGINE ──────────────────────────────────────────────
+const DEFAULTS = [
+  { name:'PAYE Tax',  type:'percent', value:25,  cap:null },
+  { name:'NAPSA',     type:'percent', value:5,   cap:1221.80 },
+  { name:'NHIMA',     type:'percent', value:1,   cap:null },
+];
+
+let deductions = JSON.parse(JSON.stringify(DEFAULTS));
+const SAMPLE_GROSS = 26150.00;
+const AVG_SALARY   = 48108;
+const EMP_COUNT    = 148;
+const GROSS_TOTAL  = 7120000;
+
+function initDeductions() {
+  const saved = localStorage.getItem('payflow_ded');
+  if (saved) { try { deductions = JSON.parse(saved); } catch(e){} }
+  renderDeductionConfig();
+  renderPayslipDeductions();
+  renderPayrunDeductions();
+}
+
+function calc(d, gross) {
+  let a = d.type === 'percent' ? gross * d.value / 100 : parseFloat(d.value) || 0;
+  if (d.cap && a > d.cap) a = d.cap;
+  return Math.round(a * 100) / 100;
+}
+
+function renderDeductionConfig() {
+  const c = document.getElementById('deduction-rows');
+  if (!c) return;
+  c.innerHTML = '';
+  deductions.forEach((d, i) => {
+    const row = document.createElement('div');
+    row.className = 'deduction-row';
+    row.innerHTML = `
+      <input class="ded-input" type="text" value="${escHtml(d.name)}" placeholder="e.g. NAPSA, Medical Levy…"
+        onchange="deductions[${i}].name=this.value;updatePreview();" />
+      <div class="ded-type-toggle">
+        <button class="ded-type-btn${d.type==='percent'?' active':''}" onclick="setType(${i},'percent',this)">% Rate</button>
+        <button class="ded-type-btn${d.type==='flat'?' active':''}" onclick="setType(${i},'flat',this)">K Flat</button>
+      </div>
+      <input class="ded-input" type="number" value="${d.value}" min="0" step="0.01"
+        placeholder="${d.type==='percent'?'e.g. 5':'e.g. 200'}"
+        onchange="deductions[${i}].value=parseFloat(this.value)||0;updatePreview();" />
+      <button class="ded-remove" onclick="removeDeduction(${i})" title="Remove deduction">×</button>
+    `;
+    c.appendChild(row);
+  });
+  updatePreview();
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function setType(i, type, btn) {
+  deductions[i].type = type;
+  btn.closest('.ded-type-toggle').querySelectorAll('.ded-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePreview();
+}
+
+function addDeductionRow() {
+  deductions.push({ name:'New Deduction', type:'percent', value:0, cap:null });
+  renderDeductionConfig();
+}
+
+function removeDeduction(i) {
+  if (deductions.length === 1) { showToast('⚠️ At least one deduction required'); return; }
+  deductions.splice(i, 1);
+  renderDeductionConfig();
+}
+
+function resetDeductions() {
+  deductions = JSON.parse(JSON.stringify(DEFAULTS));
+  renderDeductionConfig();
+  showToast('↺ Reset to ZRA defaults');
+}
+
+function saveDeductions() {
+  try { localStorage.setItem('payflow_ded', JSON.stringify(deductions)); } catch(e) {}
+  renderPayslipDeductions();
+  renderPayrunDeductions();
+  showToast('✓ Deductions saved!');
+}
+
+function updatePreview() {
+  const rows   = document.getElementById('preview-rows');
+  const netEl  = document.getElementById('preview-net');
+  const rateEl = document.getElementById('preview-rate');
+  const totEl  = document.getElementById('preview-total-ded');
+  if (!rows) return;
+  let totalDed = 0;
+  rows.innerHTML = '';
+  deductions.forEach(d => {
+    const amt = calc(d, SAMPLE_GROSS);
+    totalDed += amt;
+    const label = d.type === 'percent' ? `${d.value}%` : `K flat`;
+    const row = document.createElement('div');
+    row.className = 'preview-row';
+    row.innerHTML = `<span style="color:var(--text2)">${escHtml(d.name)} <span style="color:var(--muted);font-size:11px">(${label})</span></span><span style="color:var(--accent3)">-K ${fmt(amt)}</span>`;
+    rows.appendChild(row);
+  });
+  if (!deductions.length) rows.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0;font-style:italic">No deductions configured</div>';
+  const net = SAMPLE_GROSS - totalDed;
+  netEl.textContent = 'K ' + fmt(net);
+  rateEl.textContent = ((totalDed / SAMPLE_GROSS) * 100).toFixed(1) + '%';
+  totEl.textContent = 'K ' + fmt(totalDed) + ' deducted';
+}
+
+function renderPayslipDeductions() {
+  const c   = document.getElementById('payslip-deductions');
+  const tot = document.getElementById('payslip-total-ded');
+  const net = document.getElementById('payslip-net');
+  if (!c) return;
+  let totalDed = 0;
+  c.innerHTML = '';
+  deductions.forEach(d => {
+    const amt = calc(d, SAMPLE_GROSS);
+    totalDed += amt;
+    const capNote = (d.cap && d.type==='percent') ? `, max K ${fmt(d.cap)}` : '';
+    const label = d.type === 'percent' ? `${d.value}%${capNote}` : 'Flat';
+    c.innerHTML += `<div class="payslip-line"><span>${escHtml(d.name)} (${label})</span><span class="deduction">-K ${fmt(amt)}</span></div>`;
+  });
+  if (!deductions.length) c.innerHTML = '<div class="payslip-line" style="color:var(--muted);font-style:italic"><span>No deductions</span><span>K 0.00</span></div>';
+  tot.textContent = '-K ' + fmt(totalDed);
+  net.textContent = 'K ' + fmt(SAMPLE_GROSS - totalDed);
+}
+
+function renderPayrunDeductions() {
+  const tbody  = document.getElementById('payrun-deductions-table');
+  const rowsEl = document.getElementById('run-deduction-rows');
+  const netEl  = document.getElementById('run-net');
+  if (!tbody) return;
+  let totalDed = 0;
+  tbody.innerHTML = '';
+  rowsEl.innerHTML = '';
+  deductions.forEach(d => {
+    const perEmp = calc(d, AVG_SALARY);
+    const total  = Math.round(perEmp * EMP_COUNT);
+    totalDed += total;
+    const typeLabel = d.type === 'percent' ? `${d.value}%` : `K ${fmt(d.value)} flat`;
+    tbody.innerHTML += `<tr>
+      <td style="color:var(--text2)">${escHtml(d.name)}</td>
+      <td><span class="dept-tag" style="${d.type==='flat'?'background:rgba(255,200,90,.1);color:var(--accent4)':''}">${d.type==='percent'?'%':'Flat'}</span></td>
+      <td style="color:var(--muted)">${typeLabel}</td>
+      <td style="color:var(--accent3)">-K ${fmtK(total)}</td>
+    </tr>`;
+    rowsEl.innerHTML += `<div class="summary-row"><span class="label">${escHtml(d.name)}</span><span style="color:var(--accent3)">-K ${fmtK(total)}</span></div>`;
+  });
+  if (!deductions.length) tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);font-style:italic;text-align:center;padding:20px">No deductions configured — <a onclick="showPage(\'deductions\')" style="color:var(--accent);cursor:pointer">Configure now</a></td></tr>';
+  netEl.textContent = 'K ' + fmtK(GROSS_TOTAL - totalDed);
+}
+
+function fmt(n)  { return n.toLocaleString('en-ZM',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtK(n) { return n>=1000000 ? (n/1000000).toFixed(2)+'M' : n.toLocaleString('en-ZM',{minimumFractionDigits:0}); }
+
+// ─── MODAL ──────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('modal-s1').style.display = '';
+  document.getElementById('modal-s2').style.display = 'none';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function nextModalStep() {
+  document.getElementById('modal-s1').style.display = 'none';
+  document.getElementById('modal-s2').style.display = '';
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// ─── TOAST ──────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2600);
+}
+</script>
+</body>
+</html>
